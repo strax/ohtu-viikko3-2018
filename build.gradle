@@ -8,3 +8,14 @@ jar {
         attributes 'Main-Class': 'ohtu.Main'
     }
 }
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.apache.httpcomponents:httpcomponents-client:4.5.6'
+    compile 'com.google.code.gson:gson:2.2.4'
+    compile 'org.apache.httpcomponents:fluent-hc:4.5.6'
+    compile 'com.google.guava:guava:27.0-jre'
+}
