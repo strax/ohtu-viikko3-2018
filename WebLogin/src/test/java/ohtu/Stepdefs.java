@@ -9,9 +9,10 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 public class Stepdefs {
-    WebDriver driver = new ChromeDriver();
+    WebDriver driver = new HtmlUnitDriver();
     String baseUrl = "http://localhost:4567";
     
     @Given("^login is selected$")
@@ -21,11 +22,10 @@ public class Stepdefs {
         element.click();          
     }
 
-    @Given("^user is on the signup page")
-    public void register_new_user_selected() throws Throwable {
+    @Given("^command new user is selected$")
+    public void command_new_user_is_selected() throws Throwable {
         driver.get(baseUrl);
-        WebElement element = driver.findElement(By.linkText("register new user"));
-        element.click();
+        driver.findElement(By.linkText("register new user")).click();
     }
 
     @When("^a new account is registered with username \"([^\"]*)\" and password \"([^\"]*)\"$")
@@ -34,6 +34,32 @@ public class Stepdefs {
         driver.findElement(By.name("password")).sendKeys(password);
         driver.findElement(By.name("passwordConfirmation")).sendKeys(password);
         driver.findElement(By.name("signup")).submit();
+    }
+
+    @When("^a valid username \"([^\"]*)\" and password \"([^\"]*)\" and matching password confirmation are entered$")
+    public void a_valid_username_and_password_and_matching_password_confirmation_are_entered(String username, String password) throws Throwable {
+        signUpWith(username, password);
+    }
+
+    @When("^username \"([^\"]*)\" and password \"([^\"]*)\" and matching password confirmation are entered$")
+    public void username_and_password_and_matching_password_confirmation_are_entered(String username, String password) throws Throwable {
+        signUpWith(username, password);
+    }
+
+    @When("^username \"([^\"]*)\" and password \"([^\"]*)\" and password confirmation \"([^\"]*)\" are entered$")
+    public void username_and_password_and_password_confirmation_are_entered(String username, String password, String passwordConfirmation) throws Throwable {
+        signUpWith(username, password, passwordConfirmation);
+    }
+
+    @Then("^the user \"([^\"]*)\" is not created$")
+    public void the_user_is_not_created(String username) throws Throwable {
+        var user = Main.dao.findByName(username);
+        assertNull(user);
+    }
+
+    @Then("^error \"([^\"]*)\" is reported$")
+    public void error_is_reported(String error) throws Throwable {
+        assertTrue(driver.getPageSource().contains(error));
     }
 
     @When("^username \"([^\"]*)\" and password \"([^\"]*)\" are given$")
@@ -51,8 +77,8 @@ public class Stepdefs {
         assertTrue(driver.getPageSource().contains(pageContent));
     }
 
-    @Then("^there exists a user with username \"([^\"]*)\" and password \"([^\"]*)\"$")
-    public void there_exists_a_user_with_username_and_password(String username, String password) throws Throwable {
+    @Then("^a new user is created with username \"([^\"]*)\" and password \"([^\"]*)\"$")
+    public void a_new_user_is_created_with_username_and_password(String username, String password) throws Throwable {
         var user = Main.dao.findByName(username);
         assertNotNull(user);
         assertEquals(user.getPassword(), password);
@@ -98,5 +124,16 @@ public class Stepdefs {
         element.sendKeys(password);
         element = driver.findElement(By.name("login"));
         element.submit();  
-    } 
+    }
+
+    private void signUpWith(String username, String password) {
+        signUpWith(username, password, password);
+    }
+
+    private void signUpWith(String username, String password, String passwordConfirmation) {
+        driver.findElement(By.name("username")).sendKeys(username);
+        driver.findElement(By.name("password")).sendKeys(password);
+        driver.findElement(By.name("passwordConfirmation")).sendKeys(passwordConfirmation);
+        driver.findElement(By.name("signup")).submit();
+    }
 }
