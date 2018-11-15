@@ -5,6 +5,8 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import static org.junit.Assert.*;
+
+import ohtu.domain.User;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.By;
@@ -26,6 +28,20 @@ public class Stepdefs {
     public void command_new_user_is_selected() throws Throwable {
         driver.get(baseUrl);
         driver.findElement(By.linkText("register new user")).click();
+    }
+
+    @Given("^user with username \"([^\"]*)\" with password \"([^\"]*)\" is successfully created$")
+    public void user_with_username_with_password_is_successfully_created(String username, String password) throws Throwable {
+        driver.get(baseUrl);
+        driver.findElement(By.linkText("register new user")).click();
+        signUpWith(username, password);
+    }
+
+    @Given("^user with username \"([^\"]*)\" and password \"([^\"]*)\" is tried to be created$")
+    public void user_with_username_and_password_is_tried_to_be_created(String username, String password) throws Throwable {
+        driver.get(baseUrl);
+        driver.findElement(By.linkText("register new user")).click();
+        signUpWith(username, password);
     }
 
     @When("^a new account is registered with username \"([^\"]*)\" and password \"([^\"]*)\"$")
