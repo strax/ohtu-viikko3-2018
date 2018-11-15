@@ -19,7 +19,22 @@ public class Stepdefs {
         driver.get(baseUrl);
         WebElement element = driver.findElement(By.linkText("login"));       
         element.click();          
-    } 
+    }
+
+    @Given("^user is on the signup page")
+    public void register_new_user_selected() throws Throwable {
+        driver.get(baseUrl);
+        WebElement element = driver.findElement(By.linkText("register new user"));
+        element.click();
+    }
+
+    @When("^a new account is registered with username \"([^\"]*)\" and password \"([^\"]*)\"$")
+    public void a_new_account_is_registered_with_username_and_password(String username, String password) throws Throwable {
+        driver.findElement(By.name("username")).sendKeys(username);
+        driver.findElement(By.name("password")).sendKeys(password);
+        driver.findElement(By.name("passwordConfirmation")).sendKeys(password);
+        driver.findElement(By.name("signup")).submit();
+    }
 
     @When("^username \"([^\"]*)\" and password \"([^\"]*)\" are given$")
     public void username_and_password_are_given(String username, String password) throws Throwable {
@@ -34,6 +49,13 @@ public class Stepdefs {
     @Then("^system will respond \"([^\"]*)\"$")
     public void system_will_respond(String pageContent) throws Throwable {
         assertTrue(driver.getPageSource().contains(pageContent));
+    }
+
+    @Then("^there exists a user with username \"([^\"]*)\" and password \"([^\"]*)\"$")
+    public void there_exists_a_user_with_username_and_password(String username, String password) throws Throwable {
+        var user = Main.dao.findByName(username);
+        assertNotNull(user);
+        assertEquals(user.getPassword(), password);
     }
     
     @When("^correct username \"([^\"]*)\" and password \"([^\"]*)\" are given$")
