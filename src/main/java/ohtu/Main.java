@@ -56,6 +56,15 @@ public class Main {
             var totalHours = submissions.stream().mapToInt(Submission::getHours).sum();
             System.out.println();
             System.out.println(String.format("yhteensä: %d/%d tehtävää %d tuntia", totalExercises, totalMaxExercises, totalHours));
+
+            var stats = StatsApi.stats(course.getName());
+            System.out.println();
+            System.out.println(String.format(
+                    "kurssilla yhteensä %d palautusta, palautettuja tehtäviä %d kpl, aikaa käytetty yhteensä %d tuntia",
+                    stats.getSubmissions(),
+                    stats.getSubmittedExercises(),
+                    stats.getUsedHours()
+            ));
         }
     }
 
