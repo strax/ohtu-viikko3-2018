@@ -3,7 +3,15 @@ package ohtu;
 import com.google.gson.Gson;
 import org.apache.http.client.fluent.Request;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import static java.util.Arrays.*;
+import static java.util.stream.Collectors.*;
 
 public class Main {
 
@@ -14,22 +22,44 @@ public class Main {
         } else {
             studentId = "012345678";
         }
-        System.out.println(String.format("Opiskelijanumero: %s", studentId));
+        System.out.println(String.format("opiskelijanumero %s", studentId));
 
-        var url = "https://studies.cs.helsinki.fi/courses/students/" + studentId + "/submissions";
-        var bodyText = Request.Get(url).execute().returnContent().asString();
+        var courses = CourseApi.courses();
+        var submissionsByCourse = SubmissionApi.submissionsByCourse(studentId);
 
-        Gson mapper = new Gson();
-        Submission[] subs = mapper.fromJson(bodyText, Submission[].class);
+        for (var pair : submissionsByCourse.entrySet()) {
+            var courseName = pair.getKey();
+            var submissions = pair.getValue();
+            var course = courses.stream()
+                    .filter(x -> x.getName().equals(courseName))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException(String.format("Could not find course with the name %s", courseName)));
 
-        for (Submission submission : subs) {
-            System.out.println("  " + submission);
+            System.out.println();
+            System.out.println(String.format("%s %s %s", course.getFullName(), course.getTerm(), course.getYear()));
+            System.out.println();
+
+            for (var submission : submissions) {
+                System.out.println(String.format("Viikko %d:", submission.getWeek()));
+                var maxExercises = course.getExercises().get(submission.getWeek());
+                System.out.println(String.format(
+                        " tehtyjä tehtäviä %d/%d aikaa kului %d tehdyt tehtävät: %s",
+                        submission.getExercises().size(),
+                        maxExercises,
+                        submission.getHours(),
+                        mkStringList(submission.getExercises())
+                ));
+            }
+
+            var totalMaxExercises = course.getExercises().stream().mapToInt(Integer::intValue).sum();
+            var totalExercises = submissions.stream().flatMap(s -> s.getExercises().stream()).count();
+            var totalHours = submissions.stream().mapToInt(Submission::getHours).sum();
+            System.out.println();
+            System.out.println(String.format("yhteensä: %d/%d tehtävää %d tuntia", totalExercises, totalMaxExercises, totalHours));
         }
+    }
 
-        System.out.println(String.format(
-            "Yhteensä: %d tehtävää, %d tuntia",
-            stream(subs).mapToInt(x -> x.getExercises().size()).sum(),
-            stream(subs).mapToInt(x -> x.getHours()).sum())
-        );
+    private static String mkStringList(List<?> xs) {
+        return String.join(", ", xs.stream().map(Objects::toString).collect(toList()));
     }
 }
